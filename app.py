@@ -5,9 +5,50 @@ import matplotlib.pyplot as plt
 import zipfile
 import hashlib
 import qrcode
+import base64
 
 from io import BytesIO
+# ZIP DOWNLOAD BUTTON
+        with open(zip_filename, "rb") as f:
 
+            zip_bytes = f.read()
+
+            st.download_button(
+                label="📦 Download Complete ZIP Folder",
+                data=zip_bytes,
+                file_name=zip_filename,
+                mime="application/zip"
+            )
+
+        # QR CODE FOR ZIP DOWNLOAD
+        st.subheader("📱 QR Code for ZIP Download")
+
+        # Convert ZIP into downloadable bytes
+        import base64
+
+        b64 = base64.b64encode(zip_bytes).decode()
+
+        href = f"""
+        <a href="data:application/zip;base64,{b64}"
+        download="{zip_filename}">
+        Download ZIP
+        </a>
+        """
+
+        # Generate QR Code
+        qr = qrcode.make(href)
+
+        buf = BytesIO()
+
+        qr.save(buf)
+
+        st.image(
+            buf,
+            caption="Scan QR to Download ZIP File"
+        )
+
+        # Also show clickable download link
+        st.markdown(href, unsafe_allow_html=True)
 st.set_page_config(
     page_title="Smart File Organizer Pro AI",
     layout="wide"
