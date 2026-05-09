@@ -7,7 +7,6 @@ import hashlib
 import qrcode
 from io import BytesIO
 import base64
-import base64
 
 # QR CODE FOR ZIP DOWNLOAD
 st.subheader("📱 QR Code for ZIP Download")
