@@ -8,8 +8,6 @@ import qrcode
 
 from io import BytesIO
 
-# ---------------- PAGE CONFIG ---------------- #
-
 st.set_page_config(
     page_title="Smart File Organizer Pro AI",
     layout="wide"
@@ -17,22 +15,16 @@ st.set_page_config(
 
 st.title("📂 Smart File Organizer Pro AI")
 
-# ---------------- FILE UPLOAD ---------------- #
-
 uploaded_files = st.file_uploader(
     "Upload Files",
     accept_multiple_files=True
 )
-
-# ---------------- FILE TYPES ---------------- #
 
 image_ext = [".jpg", ".png", ".jpeg"]
 doc_ext = [".pdf", ".txt", ".docx"]
 video_ext = [".mp4", ".mkv"]
 music_ext = [".mp3", ".wav"]
 code_ext = [".py", ".html", ".cpp"]
-
-# ---------------- CATEGORY STORAGE ---------------- #
 
 organized_files = {
     "Images": [],
@@ -43,8 +35,7 @@ organized_files = {
     "Others": []
 }
 
-# ---------------- HASH FUNCTION ---------------- #
-
+# HASH FUNCTION
 def get_file_hash(file_path):
 
     hasher = hashlib.md5()
@@ -57,8 +48,7 @@ def get_file_hash(file_path):
 
     return hasher.hexdigest()
 
-# ---------------- ORGANIZE BUTTON ---------------- #
-
+# MAIN BUTTON
 if st.button("Organize Files"):
 
     if uploaded_files:
@@ -78,7 +68,7 @@ if st.button("Organize Files"):
 
             ext = os.path.splitext(file_name)[1].lower()
 
-            # CATEGORY CHECK
+            # CATEGORY
             if ext in image_ext:
                 category = "Images"
 
@@ -105,27 +95,23 @@ if st.button("Organize Files"):
 
             organized_files[category].append(save_path)
 
-            # FILE SIZE
             size = round(os.path.getsize(save_path) / 1024, 2)
 
             file_data.append([file_name, category, size])
 
-        # SUCCESS MESSAGE
+        # SUCCESS
         st.success("✅ Files Organized Successfully!")
 
-        # ---------------- DATAFRAME ---------------- #
-
+        # DATAFRAME
         df = pd.DataFrame(
             file_data,
             columns=["File Name", "Category", "Size (KB)"]
         )
 
         st.subheader("📋 Organized Files")
-
         st.dataframe(df)
 
-        # ---------------- SEARCH ---------------- #
-
+        # SEARCH
         st.subheader("🔍 Search Files")
 
         search = st.text_input("Enter File Name")
@@ -138,8 +124,7 @@ if st.button("Organize Files"):
 
             st.dataframe(filtered_df)
 
-        # ---------------- PIE CHART ---------------- #
-
+        # PIE CHART
         st.subheader("📊 File Distribution")
 
         category_count = df["Category"].value_counts()
@@ -154,8 +139,109 @@ if st.button("Organize Files"):
 
         st.pyplot(fig)
 
-        # ---------------- SEGREGATED FILES ---------------- #
-
+        # SEGREGATED FILES
         st.subheader("📁 Segregated Files")
 
-        for category, files in organized_files
+        for category, files in organized_files.items():
+
+            if files:
+
+                st.markdown(f"## {category}")
+
+                for file_path in files:
+
+                    file_name = os.path.basename(file_path)
+
+                    st.write(f"📄 {file_name}")
+
+                    # IMAGE PREVIEW
+                    if category == "Images":
+                        st.image(file_path, width=200)
+
+                    # DOWNLOAD BUTTON
+                    with open(file_path, "rb") as f:
+
+                        st.download_button(
+                            label=f"⬇ Download {file_name}",
+                            data=f,
+                            file_name=file_name
+                        )
+
+        # DUPLICATE DETECTOR
+        st.subheader("🛑 Duplicate File Detection")
+
+        hashes = {}
+
+        duplicates = []
+
+        for category, files in organized_files.items():
+
+            for file_path in files:
+
+                file_hash = get_file_hash(file_path)
+
+                if file_hash in hashes:
+
+                    duplicates.append(file_path)
+
+                else:
+
+                    hashes[file_hash] = file_path
+
+        if duplicates:
+
+            st.error("Duplicate Files Found!")
+
+            for dup in duplicates:
+
+                st.write("📄", os.path.basename(dup))
+
+        else:
+
+            st.success("✅ No Duplicate Files Found")
+
+        # CREATE ZIP
+        zip_filename = "Organized_Files.zip"
+
+        with zipfile.ZipFile(zip_filename, "w") as zipf:
+
+            for category, files in organized_files.items():
+
+                for file_path in files:
+
+                    zipf.write(file_path)
+
+        # DOWNLOAD ZIP
+        st.subheader("📦 Download Complete Folder")
+
+        with open(zip_filename, "rb") as f:
+
+            st.download_button(
+                label="⬇ Download ZIP Folder",
+                data=f,
+                file_name=zip_filename,
+                mime="application/zip"
+            )
+
+        # QR CODE
+        st.subheader("📱 QR Code Access")
+
+        qr_data = "Files Organized Successfully!"
+
+        qr = qrcode.make(qr_data)
+
+        buffer = BytesIO()
+
+        qr.save(buffer)
+
+        st.image(
+            buffer,
+            caption="Scan QR Code",
+            width=250
+        )
+
+        st.success("✅ QR Code Generated")
+
+    else:
+
+        st.warning("⚠ Please upload files")
