@@ -226,7 +226,7 @@ if st.button("Organize Files"):
         # QR CODE
         st.subheader("📱 QR Code Access")
 
-        qr_data = "https://hackathon-nqhnszvvwnirjqnhdwgkd5.streamlit.app/"
+        qr_data = "https://hackathon-nqhnszvvwnirjqnhdwgkd5.streamlit.app/~/+/media/c58740cd7ddd6689f60ce40e28a571e51f72abd5d656df454574ff41.zip"
 
         qr = qrcode.make(qr_data)
 
