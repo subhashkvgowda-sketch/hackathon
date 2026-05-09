@@ -166,6 +166,13 @@ if st.button("🚀 Organize Files"):
                         st.image(file_path, width=250)
 
                     # Individual Download Button
-                    with open(file_path, "rb") as f:
+                    with open(zip_filename, "rb") as f:
 
-                        st.download
+    st.download_button(
+        label="📦 Download Complete ZIP Folder",
+        data=f,
+        file_name=zip_filename,
+        mime="application/zip"
+    )
+
+                        
