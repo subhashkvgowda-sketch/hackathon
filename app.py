@@ -158,4 +158,4 @@ if st.button("Organize Files"):
 
         st.subheader("📁 Segregated Files")
 
-        for category, files in organized_files
+        for category, files in organized_files.items():
