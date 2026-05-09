@@ -240,4 +240,4 @@ if st.button("Organize Files"):
 
     else:
 
-        st.warning("⚠ Please upload files")files")
+        st.warning("⚠ Please upload files")
