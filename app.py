@@ -1,6 +1,5 @@
 import streamlit as st
 import os
-import shutil
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -8,7 +7,10 @@ st.set_page_config(page_title="Smart File Organizer Pro", layout="wide")
 
 st.title("📂 Smart File Organizer Pro")
 
-folder_path = st.text_input("Enter Folder Path")
+uploaded_files = st.file_uploader(
+    "Upload Files",
+    accept_multiple_files=True
+)
 
 image_ext = [".jpg", ".png", ".jpeg"]
 doc_ext = [".pdf", ".txt", ".docx"]
@@ -18,51 +20,54 @@ code_ext = [".py", ".html", ".cpp"]
 
 if st.button("Organize Files"):
 
-    if os.path.exists(folder_path):
+    if uploaded_files:
 
-        files = os.listdir(folder_path)
+        folders = ["Images", "Documents", "Videos", "Music", "Code", "Others"]
+
+        for folder in folders:
+            os.makedirs(folder, exist_ok=True)
 
         file_data = []
 
-        for file in files:
+        for uploaded_file in uploaded_files:
 
-            file_path = os.path.join(folder_path, file)
+            file_name = uploaded_file.name
 
-            if os.path.isfile(file_path):
+            ext = os.path.splitext(file_name)[1].lower()
 
-                ext = os.path.splitext(file)[1].lower()
+            if ext in image_ext:
+                folder = "Images"
 
-                if ext in image_ext:
-                    folder = "Images"
+            elif ext in doc_ext:
+                folder = "Documents"
 
-                elif ext in doc_ext:
-                    folder = "Documents"
+            elif ext in video_ext:
+                folder = "Videos"
 
-                elif ext in video_ext:
-                    folder = "Videos"
+            elif ext in music_ext:
+                folder = "Music"
 
-                elif ext in music_ext:
-                    folder = "Music"
+            elif ext in code_ext:
+                folder = "Code"
 
-                elif ext in code_ext:
-                    folder = "Code"
+            else:
+                folder = "Others"
 
-                else:
-                    folder = "Others"
+            save_path = os.path.join(folder, file_name)
 
-                target_folder = os.path.join(folder_path, folder)
+            with open(save_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
 
-                os.makedirs(target_folder, exist_ok=True)
+            size = round(os.path.getsize(save_path)/1024, 2)
 
-                shutil.move(file_path, os.path.join(target_folder, file))
-
-                size = round(os.path.getsize(os.path.join(target_folder, file))/1024, 2)
-
-                file_data.append([file, folder, size])
+            file_data.append([file_name, folder, size])
 
         st.success("✅ Files Organized Successfully!")
 
-        df = pd.DataFrame(file_data, columns=["File Name", "Category", "Size (KB)"])
+        df = pd.DataFrame(
+            file_data,
+            columns=["File Name", "Category", "Size (KB)"]
+        )
 
         st.subheader("📋 Organized Files")
         st.dataframe(df)
@@ -73,9 +78,13 @@ if st.button("Organize Files"):
 
         fig, ax = plt.subplots()
 
-        ax.pie(category_count, labels=category_count.index, autopct='%1.1f%%')
+        ax.pie(
+            category_count,
+            labels=category_count.index,
+            autopct='%1.1f%%'
+        )
 
         st.pyplot(fig)
 
     else:
-        st.error("❌ Invalid Folder Path")
+        st.warning("Please upload files")
