@@ -4,7 +4,28 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import zipfile
 import hashlib
+import qrcode
+from io import bytesIO
 
+# QR CODE GENERATION
+
+        st.subheader("📱 QR Code Access")
+
+        qr_data = "Files Organized Successfully!"
+
+        qr = qrcode.make(qr_data)
+
+        buffer = BytesIO()
+
+        qr.save(buffer)
+
+        st.image(
+            buffer,
+            caption="Scan QR Code",
+            width=250
+        )
+
+        st.success("✅ QR Code Generated")
 # Duplicate Detection Function
 def get_file_hash(file_path):
 
