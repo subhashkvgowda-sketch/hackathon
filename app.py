@@ -6,6 +6,38 @@ import zipfile
 import hashlib
 import qrcode
 from io import BytesIO
+import base64
+import base64
+
+# QR CODE FOR ZIP DOWNLOAD
+st.subheader("📱 QR Code for ZIP Download")
+
+with open(zip_filename, "rb") as f:
+
+    zip_data = f.read()
+
+# Convert ZIP to base64
+b64 = base64.b64encode(zip_data).decode()
+
+# Create downloadable link
+href = f"""
+<a href="data:application/zip;base64,{b64}"
+download="{zip_filename}">
+Download ZIP
+</a>
+"""
+
+# Show Download Link
+st.markdown(href, unsafe_allow_html=True)
+
+# Generate QR for the download link
+qr = qrcode.make(href)
+
+buf = BytesIO()
+
+qr.save(buf)
+
+st.image(buf, caption="Scan QR to Download ZIP")
 
 st.set_page_config(
     page_title="Smart File Organizer Pro AI",
