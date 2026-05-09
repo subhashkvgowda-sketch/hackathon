@@ -3,7 +3,10 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="Smart File Organizer Pro", layout="wide")
+st.set_page_config(
+    page_title="Smart File Organizer Pro",
+    layout="wide"
+)
 
 st.title("📂 Smart File Organizer Pro")
 
@@ -18,14 +21,18 @@ video_ext = [".mp4", ".mkv"]
 music_ext = [".mp3", ".wav"]
 code_ext = [".py", ".html", ".cpp"]
 
+organized_files = {
+    "Images": [],
+    "Documents": [],
+    "Videos": [],
+    "Music": [],
+    "Code": [],
+    "Others": []
+}
+
 if st.button("Organize Files"):
 
     if uploaded_files:
-
-        folders = ["Images", "Documents", "Videos", "Music", "Code", "Others"]
-
-        for folder in folders:
-            os.makedirs(folder, exist_ok=True)
 
         file_data = []
 
@@ -36,31 +43,28 @@ if st.button("Organize Files"):
             ext = os.path.splitext(file_name)[1].lower()
 
             if ext in image_ext:
-                folder = "Images"
+                category = "Images"
 
             elif ext in doc_ext:
-                folder = "Documents"
+                category = "Documents"
 
             elif ext in video_ext:
-                folder = "Videos"
+                category = "Videos"
 
             elif ext in music_ext:
-                folder = "Music"
+                category = "Music"
 
             elif ext in code_ext:
-                folder = "Code"
+                category = "Code"
 
             else:
-                folder = "Others"
+                category = "Others"
 
-            save_path = os.path.join(folder, file_name)
+            size = round(len(uploaded_file.getbuffer()) / 1024, 2)
 
-            with open(save_path, "wb") as f:
-                f.write(uploaded_file.getbuffer())
+            organized_files[category].append(uploaded_file)
 
-            size = round(os.path.getsize(save_path)/1024, 2)
-
-            file_data.append([file_name, folder, size])
+            file_data.append([file_name, category, size])
 
         st.success("✅ Files Organized Successfully!")
 
@@ -72,9 +76,21 @@ if st.button("Organize Files"):
         st.subheader("📋 Organized Files")
         st.dataframe(df)
 
-        category_count = df["Category"].value_counts()
+        # Search
+        search = st.text_input("🔍 Search File")
 
+        if search:
+
+            filtered_df = df[
+                df["File Name"].str.contains(search, case=False)
+            ]
+
+            st.dataframe(filtered_df)
+
+        # Pie Chart
         st.subheader("📊 File Distribution")
+
+        category_count = df["Category"].value_counts()
 
         fig, ax = plt.subplots()
 
@@ -86,5 +102,30 @@ if st.button("Organize Files"):
 
         st.pyplot(fig)
 
+        # Segregated Files
+        st.subheader("📁 Segregated Files")
+
+        for category, files in organized_files.items():
+
+            if files:
+
+                st.markdown(f"## {category}")
+
+                for file in files:
+
+                    st.write(f"📄 {file.name}")
+
+                    # Image Preview
+                    if category == "Images":
+                        st.image(file, width=200)
+
+                    # Download Button
+                    st.download_button(
+                        label=f"⬇ Download {file.name}",
+                        data=file,
+                        file_name=file.name
+                    )
+
     else:
+
         st.warning("Please upload files")
