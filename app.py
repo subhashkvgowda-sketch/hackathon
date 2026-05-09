@@ -9,16 +9,16 @@ import base64
 
 from io import BytesIO
 # ZIP DOWNLOAD BUTTON
-        with open(zip_filename, "rb") as f:
+with open(zip_filename, "rb") as f:
 
-            zip_bytes = f.read()
+        zip_bytes = f.read()
 
-            st.download_button(
-                label="📦 Download Complete ZIP Folder",
-                data=zip_bytes,
-                file_name=zip_filename,
-                mime="application/zip"
-            )
+        st.download_button(
+        label="📦 Download Complete ZIP Folder",
+        data=zip_bytes,
+        file_name=zip_filename,
+        mime="application/zip"
+        )
 
         # QR CODE FOR ZIP DOWNLOAD
         st.subheader("📱 QR Code for ZIP Download")
