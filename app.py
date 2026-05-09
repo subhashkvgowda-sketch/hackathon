@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+import zipfile
 
 st.set_page_config(
     page_title="Smart File Organizer Pro",
@@ -34,6 +35,11 @@ if st.button("Organize Files"):
 
     if uploaded_files:
 
+        folders = list(organized_files.keys())
+
+        for folder in folders:
+            os.makedirs(folder, exist_ok=True)
+
         file_data = []
 
         for uploaded_file in uploaded_files:
@@ -60,9 +66,14 @@ if st.button("Organize Files"):
             else:
                 category = "Others"
 
-            size = round(len(uploaded_file.getbuffer()) / 1024, 2)
+            save_path = os.path.join(category, file_name)
 
-            organized_files[category].append(uploaded_file)
+            with open(save_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+
+            organized_files[category].append(save_path)
+
+            size = round(os.path.getsize(save_path) / 1024, 2)
 
             file_data.append([file_name, category, size])
 
@@ -76,7 +87,7 @@ if st.button("Organize Files"):
         st.subheader("📋 Organized Files")
         st.dataframe(df)
 
-        # Search
+        # Search Feature
         search = st.text_input("🔍 Search File")
 
         if search:
@@ -111,20 +122,43 @@ if st.button("Organize Files"):
 
                 st.markdown(f"## {category}")
 
-                for file in files:
+                for file_path in files:
 
-                    st.write(f"📄 {file.name}")
+                    file_name = os.path.basename(file_path)
 
-                    # Image Preview
+                    st.write(f"📄 {file_name}")
+
                     if category == "Images":
-                        st.image(file, width=200)
+                        st.image(file_path, width=200)
 
-                    # Download Button
-                    st.download_button(
-                        label=f"⬇ Download {file.name}",
-                        data=file,
-                        file_name=file.name
-                    )
+                    with open(file_path, "rb") as f:
+
+                        st.download_button(
+                            label=f"⬇ Download {file_name}",
+                            data=f,
+                            file_name=file_name
+                        )
+
+        # CREATE ZIP FILE
+        zip_filename = "Organized_Files.zip"
+
+        with zipfile.ZipFile(zip_filename, "w") as zipf:
+
+            for category, files in organized_files.items():
+
+                for file_path in files:
+
+                    zipf.write(file_path)
+
+        # DOWNLOAD ZIP
+        with open(zip_filename, "rb") as f:
+
+            st.download_button(
+                label="📦 Download Complete ZIP Folder",
+                data=f,
+                file_name=zip_filename,
+                mime="application/zip"
+            )
 
     else:
 
