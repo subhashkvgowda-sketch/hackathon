@@ -88,5 +88,3 @@ if st.button("Organize Files"):
 
     else:
         st.warning("Please upload files")
-    else:
-        st.warning("Please upload files")
