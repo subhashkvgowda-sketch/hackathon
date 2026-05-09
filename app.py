@@ -6,59 +6,34 @@ import zipfile
 import hashlib
 import qrcode
 from io import BytesIO
-import base64
 
-# QR CODE FOR ZIP DOWNLOAD
-st.subheader("📱 QR Code for ZIP Download")
-
-with open(zip_filename, "rb") as f:
-
-    zip_data = f.read()
-
-# Convert ZIP to base64
-b64 = base64.b64encode(zip_data).decode()
-
-# Create downloadable link
-href = f"""
-<a href="data:application/zip;base64,{b64}"
-download="{zip_filename}">
-Download ZIP
-</a>
-"""
-
-# Show Download Link
-st.markdown(href, unsafe_allow_html=True)
-
-# Generate QR for the download link
-qr = qrcode.make(href)
-
-buf = BytesIO()
-
-qr.save(buf)
-
-st.image(buf, caption="Scan QR to Download ZIP")
-
+# PAGE SETTINGS
 st.set_page_config(
     page_title="Smart File Organizer Pro AI",
     layout="wide"
 )
 
+# TITLE
 st.title("📂 Smart File Organizer Pro AI")
 
-# Upload Files
+st.markdown("""
+### Intelligent File Management & Storage Optimization Platform
+""")
+
+# FILE UPLOADER
 uploaded_files = st.file_uploader(
-    "Upload Files",
+    "📤 Upload Files",
     accept_multiple_files=True
 )
 
-# File Extensions
+# FILE EXTENSIONS
 image_ext = [".jpg", ".png", ".jpeg"]
 doc_ext = [".pdf", ".txt", ".docx"]
 video_ext = [".mp4", ".mkv"]
 music_ext = [".mp3", ".wav"]
 code_ext = [".py", ".html", ".cpp"]
 
-# Organized File Storage
+# ORGANIZED FILES DICTIONARY
 organized_files = {
     "Images": [],
     "Documents": [],
@@ -68,7 +43,7 @@ organized_files = {
     "Others": []
 }
 
-# Duplicate Detection Function
+# DUPLICATE DETECTION FUNCTION
 def get_file_hash(file_path):
 
     hasher = hashlib.md5()
@@ -82,12 +57,12 @@ def get_file_hash(file_path):
     return hasher.hexdigest()
 
 
-# Main Button
-if st.button("Organize Files"):
+# MAIN BUTTON
+if st.button("🚀 Organize Files"):
 
     if uploaded_files:
 
-        # Create folders
+        # CREATE FOLDERS
         folders = list(organized_files.keys())
 
         for folder in folders:
@@ -95,14 +70,14 @@ if st.button("Organize Files"):
 
         file_data = []
 
-        # Process Files
+        # PROCESS FILES
         for uploaded_file in uploaded_files:
 
             file_name = uploaded_file.name
 
             ext = os.path.splitext(file_name)[1].lower()
 
-            # Categorization
+            # CATEGORY DETECTION
             if ext in image_ext:
                 category = "Images"
 
@@ -121,7 +96,7 @@ if st.button("Organize Files"):
             else:
                 category = "Others"
 
-            # Save File
+            # SAVE FILE
             save_path = os.path.join(category, file_name)
 
             with open(save_path, "wb") as f:
@@ -133,9 +108,10 @@ if st.button("Organize Files"):
 
             file_data.append([file_name, category, size])
 
+        # SUCCESS MESSAGE
         st.success("✅ Files Organized Successfully!")
 
-        # DataFrame
+        # DATAFRAME
         df = pd.DataFrame(
             file_data,
             columns=["File Name", "Category", "Size (KB)"]
@@ -144,131 +120,7 @@ if st.button("Organize Files"):
         st.subheader("📋 Organized Files")
         st.dataframe(df)
 
-        # Search Feature
-        search = st.text_input("🔍 Search File")
+        # SEARCH FEATURE
+        st.subheader("🔍 Search Files")
 
-        if search:
-
-            filtered_df = df[
-                df["File Name"].str.contains(search, case=False)
-            ]
-
-            st.dataframe(filtered_df)
-
-        # Pie Chart
-        st.subheader("📊 File Distribution")
-
-        category_count = df["Category"].value_counts()
-
-        fig, ax = plt.subplots()
-
-        ax.pie(
-            category_count,
-            labels=category_count.index,
-            autopct='%1.1f%%'
-        )
-
-        st.pyplot(fig)
-
-        # Segregated Files
-        st.subheader("📁 Segregated Files")
-
-        for category, files in organized_files.items():
-
-            if files:
-
-                st.markdown(f"## {category}")
-
-                for file_path in files:
-
-                    file_name = os.path.basename(file_path)
-
-                    st.write(f"📄 {file_name}")
-
-                    # Image Preview
-                    if category == "Images":
-                        st.image(file_path, width=200)
-
-                    # Individual Download
-                    with open(file_path, "rb") as f:
-
-                        st.download_button(
-                            label=f"⬇ Download {file_name}",
-                            data=f,
-                            file_name=file_name
-                        )
-
-        # Duplicate File Detection
-        st.subheader("🛑 Duplicate File Detection")
-
-        hashes = {}
-
-        duplicates = []
-
-        for category, files in organized_files.items():
-
-            for file_path in files:
-
-                file_hash = get_file_hash(file_path)
-
-                if file_hash in hashes:
-
-                    duplicates.append(file_path)
-
-                else:
-
-                    hashes[file_hash] = file_path
-
-        if duplicates:
-
-            st.error("Duplicate Files Found!")
-
-            for dup in duplicates:
-
-                st.write("📄", os.path.basename(dup))
-
-        else:
-
-            st.success("✅ No Duplicate Files Found")
-
-        # Create ZIP File
-        zip_filename = "Organized_Files.zip"
-
-        with zipfile.ZipFile(zip_filename, "w") as zipf:
-
-            for category, files in organized_files.items():
-
-                for file_path in files:
-
-                    zipf.write(file_path)
-
-        # ZIP Download Button
-        with open(zip_filename, "rb") as f:
-
-            st.download_button(
-                label="📦 Download Complete ZIP Folder",
-                data=f,
-                file_name=zip_filename,
-                mime="application/zip"
-            )
-
-        # QR CODE GENERATION
-        st.subheader("📱 QR Code for ZIP Download")
-
-        app_url = st.text_input(
-            "Enter Your Streamlit App URL"
-        )
-
-        if app_url:
-
-            qr = qrcode.make(app_url)
-
-            buf = BytesIO()
-
-            qr.save(buf)
-
-            st.image(buf)
-
-    else:
-
-        st.warning("⚠ Please upload files")
+        search = st.text_input("Enter File Name
